@@ -39,7 +39,7 @@ impl App {
         combatants.sort_by(|a, b| b.initiative.cmp(&a.initiative));
 
         App {
-            combatants: combatants,
+            combatants,
             current_turn: 0,
             mode: Mode::Tracker,
             input_buffer: String::new(),
