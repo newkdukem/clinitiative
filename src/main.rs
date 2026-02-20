@@ -123,7 +123,10 @@ fn render(app: &App, frame: &mut Frame) {
             frame.render_widget(text, frame.area());
         }
         Mode::AddingCombatant => {
-            let input_buffer_text = Text::raw(format!("Enter name,initiative: {}", app.input_buffer.as_str()));
+            let input_buffer_text = Text::raw(format!(
+                "Enter name,initiative: {}",
+                app.input_buffer.as_str()
+            ));
             frame.render_widget(input_buffer_text, frame.area());
         }
     }
