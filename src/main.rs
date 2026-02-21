@@ -118,7 +118,6 @@ impl App {
     fn handle_adding_combatant_key(&mut self, code: KeyCode) {
         match code {
             KeyCode::Enter => {
-                self.mode = Mode::Tracker;
                 let input: Vec<&str> = self.input_buffer.split(',').map(|s| s.trim()).collect();
                 if input.len() == 3 {
                     let name = input[0].trim().to_string();
@@ -130,15 +129,30 @@ impl App {
                         initiative,
                         hp,
                     });
+                    let currnet_name = self.combatants[self.current_turn].name.clone();
+                    self.combatants
+                        .sort_by(|a, b| b.initiative.cmp(&a.initiative));
+                    self.current_turn = self
+                        .combatants
+                        .iter()
+                        .position(|c| c.name == currnet_name)
+                        .unwrap_or(0);
                 }
                 self.input_buffer = String::new();
+                if self.combatants.is_empty() {
+                    self.mode = Mode::AddingCombatant;
+                } else {
+                    self.mode = Mode::Tracker;
+                }
             }
             KeyCode::Char(c) => self.input_buffer.push(c),
             KeyCode::Backspace => {
                 self.input_buffer.pop();
             }
             KeyCode::Esc => {
-                self.mode = Mode::Tracker;
+                if !self.combatants.is_empty() {
+                    self.mode = Mode::Tracker;
+                }
                 self.input_buffer = String::new();
             }
             _ => {}
@@ -185,7 +199,7 @@ impl App {
     fn handle_input_value_key(&mut self, code: KeyCode, action: Action) {
         match code {
             KeyCode::Enter => {
-                let value = self.input_buffer.trim().parse::<i32>().unwrap_or(0);
+                let value = self.input_buffer.trim().parse::<i32>().unwrap_or(0).abs();
                 match action {
                     Action::DealDamage => self.combatants[self.selected_target].hp -= value,
                     Action::Heal => self.combatants[self.selected_target].hp += value,
@@ -193,10 +207,19 @@ impl App {
                         self.combatants.remove(self.selected_target);
                     }
                     Action::EditName => {
-                        self.combatants[self.selected_target].name = self.input_buffer.clone()
+                        let value = self.input_buffer.trim().to_string();
+                        self.combatants[self.selected_target].name = value
                     }
                     Action::EditInitiative => {
-                        self.combatants[self.selected_target].initiative = value
+                        self.combatants[self.selected_target].initiative = value;
+                        let current_name = self.combatants[self.current_turn].name.clone();
+                        self.combatants
+                            .sort_by(|a, b| b.initiative.cmp(&a.initiative));
+                        self.current_turn = self
+                            .combatants
+                            .iter()
+                            .position(|c| c.name == current_name)
+                            .unwrap_or(0);
                     }
                 }
                 self.mode = Mode::Tracker;
